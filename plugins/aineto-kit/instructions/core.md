@@ -54,6 +54,7 @@
   - `executor` (Sonnet): implements a planned task. One executor per disjoint set of files; never two executors on the same file.
   - `verifier` (Sonnet): validates scout/scout-plus reports and executor output.
   - `runner` (Haiku): runs long/noisy commands (build, lint, test, install, ng update, migrations) and returns verdict + distinct errors + log path. Never fixes.
+  - `agy` (Haiku): delegates a self-contained task to the Antigravity CLI (`agy -p`, headless). Use for second opinions from another model family, cheap bulk work on Gemini Flash, or offloading to Antigravity credits. Spec must give: prompt, working dir, model + effort (`low|medium|high`), mode (`plan`/`accept-edits`) and whether `--dangerously-skip-permissions` is authorized (default: no). Check its VERDICT: PARTIAL means agy denied tools silently.
 - Workflow:
   1. Understand the request (Opus).
   2. Collect: dispatch `scout` agents in parallel when the work splits cleanly.

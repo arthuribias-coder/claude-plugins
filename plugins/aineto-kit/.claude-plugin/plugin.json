@@ -1,7 +1,7 @@
 {
   "name": "aineto-kit",
-  "version": "2.0.0",
-  "description": "Configuração pessoal do Claude Code: agentes de orquestração (scout, executor, verifier, runner), skills (acessibilidade BR, GitLab MCP, codebase-memory), hooks rtk e codebase-memory-mcp, e instruções globais. Linux, macOS e Windows.",
+  "version": "2.1.0",
+  "description": "Configuração pessoal do Claude Code: agentes de orquestração (scout, executor, verifier, runner, agy), skills (acessibilidade BR, GitLab MCP, codebase-memory), hooks rtk e codebase-memory-mcp, e instruções globais. Linux, macOS e Windows.",
   "author": {
     "name": "Arthur Ibias Neto"
   },
@@ -10,6 +10,7 @@
   "keywords": [
     "orchestration",
     "subagents",
+    "antigravity",
     "rtk",
     "codebase-memory",
     "instructions"
