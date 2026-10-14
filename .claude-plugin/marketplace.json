@@ -1,0 +1,9 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-marketplace.json",
+  "name": "aineto",
+  "description": "Marketplace pessoal de plugins do Claude Code",
+  "owner": { "name": "Arthur Ibias Neto" },
+  "plugins": [
+    { "name": "aineto-kit", "source": "./plugins/aineto-kit", "description": "Agentes, skills, hooks e instruções globais pessoais", "category": "productivity" }
+  ]
+}

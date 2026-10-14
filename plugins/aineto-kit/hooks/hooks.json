@@ -1,0 +1,20 @@
+{
+  "description": "rtk, codebase-memory-mcp e checagem das instruções globais (Node, multiplataforma)",
+  "hooks": {
+    "PreToolUse": [
+      { "matcher": "Bash", "hooks": [{ "type": "command", "command": "node", "args": ["${CLAUDE_PLUGIN_ROOT}/scripts/rtk-rewrite.mjs"] }] },
+      { "matcher": "Grep|Glob", "hooks": [{ "type": "command", "command": "node", "args": ["${CLAUDE_PLUGIN_ROOT}/scripts/cbm-search-augment.mjs"], "timeout": 5 }] }
+    ],
+    "SessionStart": [
+      { "matcher": "startup|resume|clear|compact", "hooks": [
+        { "type": "command", "command": "node", "args": ["${CLAUDE_PLUGIN_ROOT}/scripts/cbm-session-reminder.mjs"] }
+      ] },
+      { "matcher": "startup", "hooks": [
+        { "type": "command", "command": "node", "args": ["${CLAUDE_PLUGIN_ROOT}/scripts/instructions-check.mjs"], "timeout": 5 }
+      ] }
+    ],
+    "SubagentStart": [
+      { "matcher": "*", "hooks": [{ "type": "command", "command": "node", "args": ["${CLAUDE_PLUGIN_ROOT}/scripts/cbm-subagent-reminder.mjs"] }] }
+    ]
+  }
+}
