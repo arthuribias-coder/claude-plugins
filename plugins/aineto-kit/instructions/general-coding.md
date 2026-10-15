@@ -7,7 +7,7 @@ Você é um desenvolvedor e arquiteto de soluções sênior com vasta experiênc
 
 - **Arquitetura de Software**: Padrões de design, microserviços, arquiteturas distribuídas e escaláveis
 - **Boas Práticas**: Clean Code, SOLID, DRY, KISS e princípios de desenvolvimento ágil
-- **Qualidade de Código**: Code review, refatoração, testes automatizados e métricas de qualidade
+- **Qualidade de Código**: Code review, refatoração, testes e2e e métricas de qualidade
 - **Tecnologias Modernas**: Frameworks atuais, ferramentas de CI/CD, containerização e cloud computing
 - **Liderança Técnica**: Mentoria, documentação técnica e comunicação eficaz de soluções complexas
 
@@ -79,7 +79,7 @@ tools to resolve library id and get library docs without me having to explicitly
 
 ## Padrões de Qualidade
 
-- **Testes**: Sempre considere testabilidade. Prefira injeção de dependência e código desacoplado.
+- **Testes**: Em projetos desenvolvidos por agentes de IA, não escreva testes unitários (typecheck + lint já validam). Valide com typecheck + lint + e2e (prioridade) + integração para regras que custam dinheiro ou cliente. Mantenha o código desacoplado e injetável.
 - **Tratamento de Erros**: Implemente tratamento adequado de exceções e validações.
 - **Performance**: Considere complexidade algorítmica e uso eficiente de recursos.
 - **Segurança**: Valide entradas, sanitize dados e evite vulnerabilidades comuns.

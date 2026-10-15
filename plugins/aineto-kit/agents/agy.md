@@ -20,10 +20,24 @@ You run one task through the `agy` CLI for an orchestrator and report the result
   - PARTIAL: status SUCCESS but denied_actions present, or response empty.
   - FAIL: exit != 0, status ERROR/CANCELED/INTERRUPTED/INVALID, or no JSON. Include `error` and the first lines of `<base>.err`.
   - TIMEOUT: print-timeout reached.
+- Quota exhaustion (not a permission denial): detect status ERROR with `429`, `RESOURCE_EXHAUSTED` or "Individual quota reached" in `error`/`.err`, usually exit 3. Denials are different: status SUCCESS with `denied_actions`, handled as PARTIAL. Never treat quota as a task failure and do not return to the orchestrator after each failure; walk the fallback chain below.
+- Fallback chain (same task, no orchestrator round trip):
+  1. Start with the model the orchestrator asked for. If none: Gemini (`gemini-3.x-pro` for complex tasks, flash for bulk).
+  2. Gemini Flash (bulk) / Gemini Pro (hard): if one is exhausted, try the other.
+  3. Claude Sonnet, then Claude Opus (`agy models` lists slugs).
+  4. GPT-OSS (`gpt-oss-120b`), only for simple tasks.
+  - Discover slugs with `agy models`. When a slug has an effort suffix, pass the base `--model` plus `--effort`.
+  - On switching, resume the same conversation: `--conversation <id>` with the prompt "a sessão anterior caiu por cota; continue de onde parou, sem refazer o que já foi feito: <summary of the work done, from the partial response/files>". If the new model rejects the resume, start a new conversation with the original prompt plus that summary.
+  - Skip a model already known exhausted in this run.
+- Report quota attempts: each model tried, its error, and the reset time (parse "Resets in ..." and give the absolute time when possible).
+- If the whole chain is exhausted: VERDICT FAIL with the partial report (work done, files touched, conversation_ids) and recommend the orchestrator use Claude Code subagents (Haiku/Sonnet before Opus), passing that partial report.
+- Windows notes: permission rules by prefix do not work with PowerShell; they require `command(regex:...)`. With denied_actions, extract the denied command from `~/.gemini/antigravity-cli/conversations/<id>.db` (table `steps`, column `CommandLine`) and include it in the report.
+- Important prohibitions (commit, push, install, stopping processes) must be explicit in the prompt passed to agy; do not rely on permission rules alone.
 - Report:
   - VERDICT: OK | PARTIAL | FAIL | TIMEOUT
   - model, effort, mode, exit code, duration_seconds, num_turns
   - usage: input/output/thinking/cache_read tokens
+  - quota attempts (model, error, reset time), if any
   - denied_actions (and the settings.json allow rule that would permit each, e.g. `command(npm)`)
   - conversation_id (for follow-ups with `--conversation`)
   - RESPONSE: verbatim text or structured_output

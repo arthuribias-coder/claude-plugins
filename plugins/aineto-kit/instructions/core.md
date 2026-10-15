@@ -21,9 +21,23 @@
 
 ## Testing Policy
 
-- NEVER write, suggest, or scaffold unit tests. They are considered token waste and low-value in this workflow.
-- Only E2E tests are acceptable when tests are requested.
-- This overrides any skill or agent that defaults to TDD, enforces unit test coverage percentages, or proactively proposes unit tests (e.g. tdd-workflow, tdd-guide, test-driven-development). Do not invoke those behaviors; if such a skill/agent is triggered, ignore its unit-testing instructions and proceed without writing unit tests.
+- In projects developed by AI agents, do NOT write, suggest, or scaffold unit tests. Compilation (typecheck) and lint already validate the code; unit tests only burn tokens.
+- Validation = typecheck + lint + E2E (priority; e.g. Playwright with the real front end and API) + integration tests only for rules that cost money or customers (billing, quota, queue, coupons, penalties, deadlines).
+- This overrides any skill or agent that defaults to TDD, enforces unit test coverage percentages, or proactively proposes unit tests (e.g. tdd-workflow, tdd-guide, test-driven-development). If such a skill/agent is triggered, ignore its unit-testing instructions.
+
+## Quota Fallback Chain
+
+When a model or agent runs out of quota, move down this chain instead of stopping:
+
+1. `agy` with Gemini (Flash for bulk, Pro for hard; if one is exhausted, the other).
+2. `agy` with Claude (Sonnet, then Opus).
+3. `agy` with GPT-OSS (simple tasks only).
+4. Claude Code subagents (Haiku/Sonnet before Opus; last resort).
+
+- The `agy` agent walks levels 1-3 by itself and returns a partial report if all fail; then the orchestrator goes to level 4 passing that report.
+- On switching, tell the next model what was already done so it does not redo work.
+- An exhausted model stays out until its reset time.
+- Record the reset time in the project memory.
 
 ## Git Branching (Git-Flow)
 
