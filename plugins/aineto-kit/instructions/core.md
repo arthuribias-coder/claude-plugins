@@ -1,62 +1,27 @@
-# Instruções globais (aineto-kit)
+# Orquestração no Claude Code (aineto-kit)
 
-## Global Behavior
-
-- Be extremely terse. No pleasantries, fluff, or unsolicited explanations.
-- Output ONLY requested code, terminal commands, or direct answers.
-- Assume Software Architect level context. Provide advanced, production-ready solutions.
+Complementa `aineto-kit-common.md` (comportamento, testes, git, escrita), que vale para todos os agentes.
 
 ## Tool & MCP Execution
 
-- Precision first: Validate file paths, dependencies, and system state before executing mutations.
-- Optimize MCP usage: Minimize tool invocations. Batch read/write operations whenever feasible to save context.
-- Safety: Halt and require explicit confirmation before large-scale refactors, destructive actions, or altering CI/CD pipelines.
+- Optimize MCP usage: Minimize tool invocations.
+- Git branching: ask the demand type with AskUserQuestion.
 - Official docs: For any library, framework, SDK, CLI or cloud service (API syntax, config, version migration, setup), query Context7 first (`resolve-library-id` then `query-docs`), even when the answer seems known. Pin the version in use when relevant. Fall back to WebSearch/Perplexity only if Context7 lacks the library or the result is thin/outdated. Angular: `angular-cli` MCP `search_documentation` is an accepted alternative.
-
-## Architecture & Code Standards
-
-- Enforce SOLID, DRY, and KISS principles universally.
-- Apply Clean Architecture and Clean Code practices (strict separation of concerns, dependency inversion, semantic naming).
-- Prioritize high cohesion, low coupling, and modular, highly testable design patterns across all layers.
-
-## Testing Policy
-
-- In projects developed by AI agents, do NOT write, suggest, or scaffold unit tests. Compilation (typecheck) and lint already validate the code; unit tests only burn tokens.
-- Validation = typecheck + lint + E2E (priority; e.g. Playwright with the real front end and API) + integration tests only for rules that cost money or customers (billing, quota, queue, coupons, penalties, deadlines).
-- This overrides any skill or agent that defaults to TDD, enforces unit test coverage percentages, or proactively proposes unit tests (e.g. tdd-workflow, tdd-guide, test-driven-development). If such a skill/agent is triggered, ignore its unit-testing instructions.
 
 ## Quota Fallback Chain
 
 When a model or agent runs out of quota, move down this chain instead of stopping:
 
-1. `agy` with Gemini (Flash for bulk, Pro for hard; if one is exhausted, the other).
+1. `agy` with Gemini (Flash for bulk, Argon for hard; if one is exhausted, the other).
 2. `agy` with Claude (Sonnet, then Opus).
 3. `agy` with GPT-OSS (simple tasks only).
 4. Claude Code subagents (Haiku/Sonnet before Opus; last resort).
 
-- The `agy` agent walks levels 1-3 by itself and returns a partial report if all fail; then the orchestrator goes to level 4 passing that report.
+- `copilot` sits beside `agy` on levels 1-3: if one CLI is exhausted (or all its models are), send the task to the other before dropping to level 4.
+- The `agy` agent walks levels 1-3 by itself and the `copilot` agent retries with `--auto-tier efficiency`; each returns a partial report when it gives up, and the orchestrator passes that report to the next step.
 - On switching, tell the next model what was already done so it does not redo work.
 - An exhausted model stays out until its reset time.
 - Record the reset time in the project memory.
-
-## Git Branching (Git-Flow)
-
-- If the repository or organization documents its own branching/versioning flow (wiki, CONTRIBUTING, a dedicated skill), it is the source of truth and overrides the generic rules.
-- Before creating a branch, ALWAYS ask (AskUserQuestion) the demand type: feature, production fix (hotfix), release, or custom flow (then ask how to proceed). Never infer it from repo history.
-- Never open an MR/PR from develop to master/main unless the user declared a custom flow that requires it.
-
-## Writing Style
-
-- In all responses, commit messages, code comments, and documentation, never use characters a human would not normally type on a standard keyboard:
-  - Em dash `—` and en dash `–`
-  - Trademark/registered/copyright symbols `™` `®` `©`
-  - Smart quotes `“ ” ‘ ’`
-  - Single-character ellipsis `…`
-  - Arrows `→ ← ⇒ ↔` and decorative bullets `• ▪ ◆ ✓ ✔ ★`
-  - Emojis
-  - Special spaces (non-breaking `U+00A0`, narrow/thin `U+202F` `U+2009`, zero-width `U+200B`)
-- Use only characters available on a standard ABNT2 keyboard: plain hyphen `-`, straight quotes `"` `'`, three periods `...`, comma, colon, and parentheses.
-- Portuguese diacritics (á, ã, ç, é, ê, õ, etc.) are allowed and required.
 
 ## Agent Orchestration
 
@@ -69,12 +34,18 @@ When a model or agent runs out of quota, move down this chain instead of stoppin
   - `verifier` (Sonnet): validates scout/scout-plus reports and executor output.
   - `runner` (Haiku): runs long/noisy commands (build, lint, test, install, ng update, migrations) and returns verdict + distinct errors + log path. Never fixes.
   - `agy` (Haiku): delegates a self-contained task to the Antigravity CLI (`agy -p`, headless). Use for second opinions from another model family, cheap bulk work on Gemini Flash, or offloading to Antigravity credits. Spec must give: prompt, working dir, model + effort (`low|medium|high`), mode (`plan`/`accept-edits`) and whether `--dangerously-skip-permissions` is authorized (default: no). Check its VERDICT: PARTIAL means agy denied tools silently.
+  - `copilot` (Haiku): delegates a self-contained task to the GitHub Copilot CLI (`copilot -p`, headless, premium requests). Same uses as `agy`, plus implementation in a worktree. Spec must give: prompt, working dir, tier (`efficiency|balance|intelligence`), mode (analysis or implementation) and whether `--allow-all-paths` is authorized (default: no).
+- External CLIs (`agy`, `copilot`) spend their own quotas instead of Claude tokens:
+  - Prefer them for bulk work, second opinions from another model family and self-contained implementation; keep `executor` for tasks that need Claude-level judgment or heavy conversation context.
+  - Alternate `agy` and `copilot` across tasks/fronts to spread quota; a second opinion should come from the other CLI.
+  - Give them the same task spec as an `executor`, with the prohibitions (commit, push, install, stopping processes) written in the prompt. Their output goes through `verifier` like any executor output.
+  - Both CLIs load the shared instructions (`aineto-kit-common.md` + `general-coding.md`) from their own global instruction files, kept by `/aineto-kit:sync-instructions`.
 - Workflow:
   1. Understand the request (Opus).
   2. Collect: dispatch `scout` agents in parallel when the work splits cleanly.
   3. Verify collection: run `verifier` on scout reports that feed planning decisions. On REJECT, dispatch `scout-plus` with the original task, the rejected report, and the verifier findings, then run `verifier` again. If it is rejected a second time, the orchestrator does that collection itself.
   4. Plan (Opus): break the work into executor task specs.
-  5. Execute: dispatch `executor` agents in parallel.
+  5. Execute: dispatch `executor`, `agy` or `copilot` agents in parallel (one agent per disjoint set of files).
   6. Verify execution: run `verifier` on non-trivial changes. On FAIL, send the findings back to a new `executor` once; if it fails again, the orchestrator handles it.
   7. Consolidate (Opus): spot-check key claims (read the diff, re-run critical checks) and report to the user.
 - Do it directly when delegating costs more than doing: 1-2 files already known, a single small edit, or a task that depends heavily on conversation context.

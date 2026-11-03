@@ -1,5 +1,5 @@
 ---
-description: Instala/atualiza as instruções globais do aineto-kit em ~/.claude/rules (com backup)
+description: Instala/atualiza as instruções globais do aineto-kit em ~/.claude/rules e nos CLIs instalados (Copilot, Gemini/agy, Codex), com backup
 argument-hint: "[--dry-run]"
 allowed-tools: Bash(node:*), PowerShell(node:*)
 disable-model-invocation: true
