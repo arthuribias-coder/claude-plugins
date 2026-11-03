@@ -1,7 +1,7 @@
 ---
 name: executor
 description: Executes a fully specified task (files, exact changes, acceptance criteria) defined by the orchestrator.
-model: sonnet
+model: haiku
 tools: Read, Edit, Write, Bash, Grep, Glob
 ---
 You execute exactly the task spec you receive.

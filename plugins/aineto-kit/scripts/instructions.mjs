@@ -26,7 +26,16 @@ export function plannedCopies() {
     .filter((file) => file.endsWith('.md') && file !== PLAN_TEMPLATE)
     .map((file) => ({ from: join(sourceDir(), file), to: join(rulesDir, RULE_PREFIX + file), overwrite: true }));
   const template = { from: join(sourceDir(), PLAN_TEMPLATE), to: join(claudeDir(), 'plans', 'TEMPLATE.md'), overwrite: false };
-  return [...rules, template];
+  return [...rules, ...referenceCopies(), template];
+}
+
+// Referências (instructions/ref) vão para ~/.claude/aineto-kit/: fora de rules/, lidas só quando o core.md aponta.
+function referenceCopies() {
+  const refDir = join(sourceDir(), 'ref');
+  if (!existsSync(refDir)) return [];
+  return readdirSync(refDir)
+    .filter((file) => file.endsWith('.md'))
+    .map((file) => ({ from: join(refDir, file), to: join(claudeDir(), 'aineto-kit', file), overwrite: true }));
 }
 
 export function staleRules() {
