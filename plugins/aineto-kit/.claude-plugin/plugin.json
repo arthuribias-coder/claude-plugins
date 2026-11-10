@@ -1,6 +1,6 @@
 {
   "name": "aineto-kit",
-  "version": "2.4.0",
+  "version": "2.4.1",
   "description": "Configuração pessoal do Claude Code: agentes de orquestração (scout, executor, verifier, runner, agy, copilot), skills (acessibilidade BR, GitLab MCP, codebase-memory), hooks rtk e codebase-memory-mcp, e instruções globais para Claude Code e outros CLIs (Copilot, Antigravity/Gemini, Codex). Linux, macOS e Windows.",
   "author": {
     "name": "Arthur Ibias Neto"
