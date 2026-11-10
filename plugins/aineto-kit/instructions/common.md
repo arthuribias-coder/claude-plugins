@@ -31,6 +31,7 @@ Valem para qualquer agente de IA (Claude Code, GitHub Copilot CLI, Antigravity/a
 - If the repository or organization documents its own branching/versioning flow (wiki, CONTRIBUTING, a dedicated skill), it is the source of truth and overrides the generic rules.
 - Before creating a branch, ALWAYS ask the user the demand type: feature, production fix (hotfix), release, or custom flow (then ask how to proceed). Never infer it from repo history.
 - Never open an MR/PR from develop to master/main unless the user declared a custom flow that requires it.
+- Before opening or merging any MR/PR into master/main, check that the current master/main head carries a version tag (`git fetch origin --tags && git tag --points-at origin/master`). If it does not, stop and ask the user whether to fix the tag first, ignore the rule for this run (recording the exception in the MR/PR description), or abort. The answer applies only to that repository in that run.
 
 ## Delegated (headless) runs
 
