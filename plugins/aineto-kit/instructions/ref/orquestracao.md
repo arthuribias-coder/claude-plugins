@@ -6,7 +6,7 @@ Referência apontada por `aineto-kit-core.md`. Não é carregada em toda sessão
 
 When a model or agent runs out of quota, move down this chain instead of stopping:
 
-1. `agy` with Gemini (Flash for bulk, Argon for hard; if one is exhausted, the other).
+1. `agy` with Gemini: Hydrogen by default (Gemini 4 fast model, successor of Flash), Argon for hard tasks, Flash 3.8 as fallback; if one is exhausted, the next.
 2. `agy` with Claude (Sonnet, then Opus).
 3. `agy` with GPT-OSS (simple tasks only).
 4. Claude Code subagents (Haiku/Sonnet before Opus; last resort).
